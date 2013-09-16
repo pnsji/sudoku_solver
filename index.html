@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sudoku Solver</title>
+    <script>
+    
+      // convert integer to literal
+      function itos(number)
+      {
+        if (number == 1) return "one";
+        if (number == 2) return "two";
+        if (number == 3) return "three";
+        if (number == 4) return "four";
+        if (number == 5) return "five";
+        if (number == 6) return "six";
+        if (number == 7) return "seven";
+        if (number == 8) return "eight";
+        if (number == 9) return "nine";
+      }
+      
+      // pretty print the puzzle board
+      function puzzle_to_s (puzzle)
+      {
+        var inputdata = "";
+        for (var j = 1; j < 10; j++)
+        {
+          for (var i = 1; i < 10; i++)
+          {
+            inputdata += puzzle[j][i].toString(); 
+          }
+          inputdata += "\n";
+        }
+        alert(inputdata);      
+      }
+
+      // debugging function
+      function debug(arr)
+      {
+        // debugging
+        var inputdata = "<p>";
+				var puzzleElement = document.getElementById("result");
+				var h = document.createElement('p');
+        for (var j = 0; j < 10; j++)
+        {
+          for (var i = 0; i < 10; i++)
+          {
+            if (j == 0)
+            {
+              var t = document.createTextNode(i.toString());
+              h.appendChild(t);
+              inputdata += i.toString();
+            }
+            else if (i == 0)
+            {
+              var t = document.createTextNode(j.toString());
+              h.appendChild(t);
+							inputdata += j.toString();
+						}
+            else
+            {
+              var t = document.createTextNode(arr[j][i].toString());
+              h.appendChild(t);
+              inputdata += arr[j][i].toString(); 
+            }
+          }
+          var b = document.createElement('br');
+          h.appendChild(b);
+          inputdata += "\n";
+        }
+        puzzleElement.appendChild(h);     
+      }
+      
+      // validate duplicate items in the same row
+      function check_row (puzzle, row, index)
+      {
+        for (var j = 1; j < 10; j++)
+        {
+          if (j == index)
+            continue;
+          if (puzzle[row][j] == puzzle[row][index])
+            throw ("Conflict in row " + row + " between col " + j + " and " + index); 
+        }
+      }
+      
+      // validate duplicate items in the same column
+      function check_col (puzzle, col, index)
+      {
+        for (var j = 1; j < 10; j++)
+        {
+          if (j == index)
+            continue;
+          if (puzzle[j][col] == puzzle[index][col])
+            throw ("Conflict in col " + col + " between row " + j + " and " + index); 
+        }
+      }
+      
+      // validate duplicate items in the 3x3 cube
+      function check_sur (puzzle, row, col)
+      {
+        var start_row = 0;
+        var start_col = 0;
+        
+        if ((row / 3) < 1.1)
+          start_row = 1;
+        else if ((row / 3) > 2.0)
+          start_row = 7;
+        else
+          start_row = 4;
+
+        if ((col / 3) < 1.1)
+          start_col = 1;
+        else if ((col / 3) > 2.0)
+          start_col = 7;
+        else
+          start_col = 4;
+        
+				for (var i = start_row; i < start_row + 3; i++)
+				{
+				  for (var j = start_col; j < start_col + 3; j++)
+				  {
+				    if ((i == row) && (j == col))
+				      continue;
+				    else
+				    {
+				      if (puzzle[i][j] == puzzle[row][col])
+				        throw ("conflict between [" + i + "][" + j + "] and [" + row + "][" + col + "]");
+				    }
+				  }
+				}
+      }
+
+			// Validate user input
+      function validate_input (puzzle)
+      {
+        for (var row = 1; row < 10; row++)
+        {
+          for (var col = 1; col < 10; col++)
+          {
+            if (puzzle[row][col] != 0)
+            {
+              check_row(puzzle, row, col); 
+              check_col(puzzle, col, row);
+              check_sur(puzzle, row, col);
+            } 
+          }
+        }      
+      }
+    
+      // Parse user input. Convert into Puzzle board object.
+      function parse_input()
+      {
+        var arr = [];
+        for (var row = 0; row < 10; row++)
+        {
+          arr[row] = [];    
+          for(var col = 0; col < 10; col++)
+          { 
+        	arr[row][col] = 0;    
+    	    }	   
+        }
+
+				for (var row = 1; row < 10; row++)
+				{
+  				for (var col = 1; col < 10; col++)
+	  			{
+		  			if (eval("document.row" + row.toString() + "." + itos(col) + ".value") && (isNaN(eval("document.row" + row.toString() + "." + itos(col) + ".value")) == false))
+			  		{
+          	  arr[row][col] = parseInt(eval("document.row" + row.toString() + "." + itos(col) + ".value"));				  
+        	  }
+				  }
+				}
+				return arr;   
+      }
+      
+      function main()
+      {
+        try
+        {
+          puzzledata = parse_input();
+          validate_input(puzzledata);
+          // puzzle_to_s(puzzledata);
+          debug(puzzledata);
+        }
+        catch (err)
+        {
+          alert(err);
+        }
+      }
+
+    </script>
+  </head>
+  <body>
+    <h1>
+      <script>document.write("Sudoku Solver!");</script>
+    </h1>
+    <span id="result"></span>
+    <span id="puzzle">
+    <table>
+      <thead>
+        <tr>
+          <td></td>
+          <script>
+            for (var i = 1; i < 10; i++)
+            {
+              document.write("<td><center>" + i.toString() + "</center></td>");
+              if ((i % 3 == 0) && i < 9)
+                document.write("<td><center>|</center></td>");
+            }
+          </script>
+        </tr>
+      </thead>
+      <script>
+        for (var j = 1; j < 10; j++)
+        {
+          document.write("<tr>");
+          document.write("<td>" + j.toString() + "</td>");
+          document.write("<form name=\"row" + j.toString()+ "\">");
+          for (var i = 1; i < 10; i++)
+          {
+            document.write("<td><input type=\"text\" name=\"" + itos(i) + "\" size=\"1\" maxlength=\"1\"/></td>");
+            if ((i % 3 == 0) && i < 9)
+            document.write("<td><center>|</center></td>");
+          }
+          document.write("</form>");
+          document.write("</tr>");
+        
+          if (j % 3 == 0)
+          {
+            document.write("<tr>");
+            document.write("<td></td>");
+            for (var k = 1; k < 10; k++)
+            {
+              document.write("<td><center>=</center></td>");
+              if ( (k % 3 == 0) && k < 9)
+                document.write("<td>+</td>");
+            }
+            document.write("</tr>");
+          }
+        }
+      </script>
+    <table>
+    <button onclick="main()">Parse</button>
+    </span>
+  </body>
+</html>
