@@ -262,7 +262,7 @@
           if (puzzle[row][j].final_value > 0)
             continue;
   
-          temp_value = puzzle[row][index].final_value;
+          var temp_value = puzzle[row][index].final_value;
           if (puzzle[row][j].value[temp_value] == true)
           {
             puzzle[row][j].value[temp_value] = false;
@@ -281,6 +281,38 @@
         return change_flag;
       }
 
+      // eliminate possible item in the same col
+      function eliminate_col (puzzle, col, index)
+      {
+        var change_flag = false;
+        for (var j = 1; j < 10; j++)
+        {
+          if (j == index)
+            continue;
+          
+          if (puzzle[j][col].final_value > 0)
+            continue;
+  
+          //alert ("checking [" + j.toString() + "][" + col.toString() + "]");
+          var temp_value = puzzle[index][col].final_value;
+          //alert("eliminating " + temp_value.toString());
+          if (puzzle[j][col].value[temp_value] == true)
+          {
+            puzzle[j][col].value[temp_value] = false;
+            puzzle[j][col].posibility -= 1;
+            //alert("eliminating " + temp_value.toString() + " from [" + j.toString() + "][" + col.toString() + "]. possibility is now " + puzzle[j][col].posibility.toString());
+            if (puzzle[j][col].posibility == 1)
+            {
+              for (var k = 1; k < 10; k++) {
+                if (puzzle[j][col].value[k] == true)
+                  puzzle[j][col].final_value = k;
+              }
+            }
+            change_flag = true;
+          }
+        }
+        return change_flag;
+      }
       
       function elimination(_puzzle)
       {
@@ -294,14 +326,18 @@
           {
             for(var col = 1; col < 10; col++)
             { 
+              var row_change = false;
+       	      var col_change = false;
+       	      var temp_change = false;
+             
               if (puzzle[row][col].final_value > 0)
               {
-                var row_change = eliminate_row(puzzle, row, col);
-        	      //eliminate_column
+                row_change = eliminate_row(puzzle, row, col);
+        	      col_change = eliminate_col(puzzle, col, row);
         	      //eliminate_sur 
-        	      var temp_change = row_change;
-        	      changes = changes && temp_change;
+        	      var temp_change = row_change | col_change;
         	    }
+        	      changes = changes && temp_change;
     	      }	   
           }      
         }
