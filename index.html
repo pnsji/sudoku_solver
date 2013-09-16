@@ -4,6 +4,29 @@
     <title>Sudoku Solver</title>
     <script>
     
+      function Cell (_initial_value) {
+        this.posibility = 9;
+        this.value = [];
+        this.final_value = 0;
+              
+        if (_initial_value > 0) {
+          for (var i=0; i<10; i++) {
+            if (i == _initial_value)
+              this.value[i] = true;
+            else
+              this.value[i] = false;
+          }
+          this.posibility = 1;
+          this.final_value = _initial_value;
+        }
+        else {
+          for (var i=0; i<10; i++) {
+            this.value[i] = true;
+          }
+          this.value[0] = false;
+        }
+      }
+
       // convert integer to literal
       function itos(number)
       {
@@ -61,6 +84,47 @@
               var t = document.createTextNode(arr[j][i].toString());
               h.appendChild(t);
               inputdata += arr[j][i].toString(); 
+            }
+          }
+          var b = document.createElement('br');
+          h.appendChild(b);
+          inputdata += "\n";
+        }
+        puzzleElement.appendChild(h);     
+      }
+      
+      // debugging function
+      function print_cell(_puzzle)
+      {
+        // debugging
+        var inputdata = "<p>";
+				var puzzleElement = document.getElementById("result");
+				var h = document.createElement('p');
+        for (var j = 0; j < 10; j++)
+        {
+          for (var i = 0; i < 10; i++)
+          {
+            if (j == 0)
+            {
+              var t = document.createTextNode(i.toString());
+              h.appendChild(t);
+              inputdata += i.toString();
+            }
+            else if (i == 0)
+            {
+              var t = document.createTextNode(j.toString());
+              h.appendChild(t);
+							inputdata += j.toString();
+						}
+            else
+            {
+              var temp_value = 0;
+              if (_puzzle[j][i].posibility == 1) {
+                temp_value = _puzzle[j][i].final_value;
+              }  
+              var t = document.createTextNode(temp_value.toString());
+              h.appendChild(t);
+              inputdata += temp_value.toString(); 
             }
           }
           var b = document.createElement('br');
@@ -172,14 +236,93 @@
 				return arr;   
       }
       
+      function convert_input_2_cell(arr)
+      {
+        var puzzle = []
+        for (var row = 0; row < 10; row++)
+        {
+          puzzle[row] = [];    
+          for(var col = 0; col < 10; col++)
+          { 
+        	  puzzle[row][col] = new Cell(arr[row][col]);    
+    	    }	   
+        }
+				return puzzle;         
+      }
+      
+      // eliminate possible item in the same row
+      function eliminate_row (puzzle, row, index)
+      {
+        var change_flag = false;
+        for (var j = 1; j < 10; j++)
+        {
+          if (j == index)
+            continue;
+          
+          if (puzzle[row][j].final_value > 0)
+            continue;
+  
+          temp_value = puzzle[row][index].final_value;
+          if (puzzle[row][j].value[temp_value] == true)
+          {
+            puzzle[row][j].value[temp_value] = false;
+            puzzle[row][j].posibility -= 1;
+            
+            if (puzzle[row][j].posibility == 1)
+            {
+              for (var k = 1; k < 10; k++) {
+                if (puzzle[row][j].value[k] == true)
+                  puzzle[row][j].final_value = k;
+              }
+            }
+            change_flag = true;
+          }
+        }
+        return change_flag;
+      }
+
+      
+      function elimination(_puzzle)
+      {
+        var changes = true;
+        var counter = 1;
+        while (changes)
+        {
+          alert(counter);
+          counter++;
+          for (var row = 1; row < 10; row++)
+          {
+            for(var col = 1; col < 10; col++)
+            { 
+              if (puzzle[row][col].final_value > 0)
+              {
+                var row_change = eliminate_row(puzzle, row, col);
+        	      //eliminate_column
+        	      //eliminate_sur 
+        	      var temp_change = row_change;
+        	      changes = changes && temp_change;
+        	    }
+    	      }	   
+          }      
+        }
+        }
+      
+      function solve_puzzle (_puzzle)
+      {
+        elimination(_puzzle);
+      }
+      
       function main()
       {
         try
         {
           puzzledata = parse_input();
           validate_input(puzzledata);
+          puzzle = convert_input_2_cell(puzzledata); 
           // puzzle_to_s(puzzledata);
-          debug(puzzledata);
+          //debug(puzzledata);
+          solve_puzzle(puzzle);
+          print_cell(puzzle);
         }
         catch (err)
         {
